@@ -4,7 +4,6 @@
 #pragma comment (lib, "ws2_32.lib")
 
 #define BUFFER_SIZE 4096
-#define IP_LEN 16
 
 namespace network
 {
@@ -13,7 +12,7 @@ namespace network
 		sockaddr_storage addr;
 		socklen_t addrLen = sizeof(sockaddr_storage);
 		SOCKET socket;
-		char ipAsString[IP_LEN];
+		char ipAsString[IPV6_ADDRSTRLEN];
 		UINT id;
 	};
 
@@ -26,6 +25,7 @@ namespace network
 	private:
 		int								m_port;
 		std::string						m_ipAddress;
+		SOCKET							m_socket;
 		std::vector<ClientMetaData>		m_clients;
 		MessageReceivedHandler			MessageReceived;
 
@@ -112,6 +112,14 @@ namespace network
 			return false;
 		}
 
+		m_socket = CreateSocket();
+
+		if (m_socket == INVALID_SOCKET)
+		{
+			std::cerr << "Failed to create a socket error code: " << WSAGetLastError() << std::endl;
+			return false;
+		}
+
 		return true;
 	}
 
@@ -130,6 +138,7 @@ namespace network
 	Server::Server(std::string&& ipAddress, int&& portNumber, MessageReceivedHandler handler)
 		:m_ipAddress(ipAddress), m_port(portNumber), MessageReceived(handler)
 	{
+		m_socket = 0;
 	}
 
 	Server::~Server()
@@ -139,18 +148,10 @@ namespace network
 
 	void Server::Run()
 	{
-		SOCKET listening = CreateSocket();
-
-		if (listening == INVALID_SOCKET)
-		{
-			std::cerr << "Failed to create a socket error code: " << WSAGetLastError() << std::endl;
-			return;
-		}
-
 		std::cout << "[SERVER] Started!" << std::endl;
 
 		fd_set master = {};
-		FD_SET(listening, &master);
+		FD_SET(m_socket, &master);
 		char buffer[BUFFER_SIZE];
 
 		while (1)
@@ -165,17 +166,17 @@ namespace network
 
 				if (FD_ISSET(currentSocket, &copy))
 				{
-					if (currentSocket == listening)
+					if (currentSocket == m_socket)
 					{
 						ClientMetaData client = {};	
-						client.socket = WaitForConnection(listening, &client);
+						client.socket = WaitForConnection(m_socket, &client);
 
 						if (client.socket == INVALID_SOCKET)
 						{
 							return;
 						}
-						inet_ntop(client.addr.ss_family, get_in_addr((struct sockaddr*)&client.addr), &client.ipAsString[0], IP_LEN);
-						std::cout << "Client connected from: " << client.ipAsString << ":" << GetPort((struct sockaddr*)&client.addr) << " " << 
+						inet_ntop(client.addr.ss_family, get_in_addr((struct sockaddr*)&client.addr), &client.ipAsString[0], IPV6_ADDRSTRLEN);
+						std::cout << "[SERVER] Client connected from: " << client.ipAsString << ":" << GetPort((struct sockaddr*)&client.addr) << " " << 
 							PrintAddressFamily((struct sockaddr*)&client.addr) << std::endl;
 						m_clients.push_back(client);
 
@@ -221,7 +222,7 @@ namespace network
 				}
 			}
 		}
-		closesocket(listening);
+		closesocket(m_socket);
 	}
 
 	void Server::Send(const int& clientSocket, const std::string& msg)

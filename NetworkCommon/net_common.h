@@ -12,6 +12,8 @@
 #define _WIN32_WINNT 0x0A00
 #endif
 
+#define IPV6_ADDRSTRLEN 46
+
 void* get_in_addr(struct sockaddr* sa)
 {
 	if (sa->sa_family == AF_INET)
@@ -40,10 +42,10 @@ std::string PrintAddressFamily(struct sockaddr* sa)
 {
 	if (sa->sa_family == AF_INET)
 	{
-		return "IP version 4";
+		return "<IP version 4>";
 	}
 	else
 	{
-		return "IP version 6";
+		return "<IP version 6>";
 	}
 }

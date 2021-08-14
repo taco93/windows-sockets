@@ -10,8 +10,8 @@ namespace network
 {
 	struct ClientMetaData
 	{
-		sockaddr_in addr;
-		socklen_t addrLen = sizeof(sockaddr_in);
+		sockaddr_storage addr;
+		socklen_t addrLen = sizeof(sockaddr_storage);
 		SOCKET socket;
 		char ipAsString[IP_LEN];
 		UINT id;
@@ -147,6 +147,8 @@ namespace network
 			return;
 		}
 
+		std::cout << "[SERVER] Started!" << std::endl;
+
 		fd_set master = {};
 		FD_SET(listening, &master);
 		char buffer[BUFFER_SIZE];
@@ -172,8 +174,9 @@ namespace network
 						{
 							return;
 						}
-						inet_ntop(client.addr.sin_family, &client.addr.sin_addr, &client.ipAsString[0], IP_LEN);
-						std::cout << "Client connected from: " << client.ipAsString << ":" << ntohs(client.addr.sin_port) << std::endl;
+						inet_ntop(client.addr.ss_family, get_in_addr((struct sockaddr*)&client.addr), &client.ipAsString[0], IP_LEN);
+						std::cout << "Client connected from: " << client.ipAsString << ":" << GetPort((struct sockaddr*)&client.addr) << " " << 
+							PrintAddressFamily((struct sockaddr*)&client.addr) << std::endl;
 						m_clients.push_back(client);
 
 						FD_SET(client.socket, &master);

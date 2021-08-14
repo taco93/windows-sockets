@@ -1,5 +1,6 @@
 #include <crtdbg.h>
 #include <network.h>
+#include <Windows.h>
 
 enum class MessageType
 {

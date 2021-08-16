@@ -53,7 +53,7 @@ namespace network
 			static_assert(std::is_standard_layout<DataType>::value, "Data is too complex to deserialize");
 
 			size_t i = msg.payload.size() - sizeof(DataType);
-			
+
 			std::memcpy(&data, msg.payload.data() + i, sizeof(DataType));
 
 			msg.payload.resize(i);

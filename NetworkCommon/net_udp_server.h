@@ -85,7 +85,7 @@ namespace network
 				return -1;
 			}
 
-			//freeaddrinfo(servinfo);
+			freeaddrinfo(servinfo);
 
 			u_long enable = 1;
 			ioctlsocket(listening, FIONBIO, &enable);
@@ -138,12 +138,12 @@ namespace network
 
 			while (1)
 			{
-				/*inet_ntop(client.addr.ss_family, get_in_addr((struct sockaddr*)&client.addr), &client.ipAsString[0], IPV6_ADDRSTRLEN);
-				std::cout << "[SERVER] Client connected from: " << client.ipAsString << ":" << GetPort((struct sockaddr*)&client.addr) << " " <<
-					PrintAddressFamily((struct sockaddr*)&client.addr) << std::endl;*/
 				int bytesReceived = 0;
 
-				struct sockaddr_in client_info;
+				char ipAsString[IPV6_ADDRSTRLEN];
+				ZeroMemory(ipAsString, sizeof(ipAsString));
+
+				struct sockaddr_storage client_info;
 				socklen_t client_info_len = sizeof(client_info);
 
 				ZeroMemory(buffer, sizeof(buffer));
@@ -151,7 +151,11 @@ namespace network
 
 				if (bytesReceived > 0)
 				{
-					std::cout << "[SERVER] Incoming message!" << std::endl;
+					inet_ntop(client_info.ss_family, get_in_addr((struct sockaddr*)&client_info), ipAsString, sizeof(ipAsString));
+					std::cout << "[SERVER] Incoming message from: " << ipAsString << ":" << GetPort((struct sockaddr*)&client_info) << " " <<
+						PrintAddressFamily((struct sockaddr*)&client_info) << std::endl;
+
+					std::cout << "Message: " << buffer << std::endl;
 					if (this->MessageReceived != NULL)
 					{
 						this->MessageReceived(this, (struct sockaddr*)&client_info, client_info_len, std::string(buffer, 0, bytesReceived));

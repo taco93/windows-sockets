@@ -27,7 +27,10 @@
     <ClInclude Include="network.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="net_server.h">
+    <ClInclude Include="net_tcp_server.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net_udp_server.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

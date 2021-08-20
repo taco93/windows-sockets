@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <ws2tcpip.h>
+#include <chrono>
 
 
 #ifdef _WIN32
@@ -14,7 +15,7 @@
 
 #define IPV6_ADDRSTRLEN 46
 
-void* get_in_addr(struct sockaddr* sa)
+void* get_in_addr(const struct sockaddr* sa)
 {
 	if (sa->sa_family == AF_INET)
 	{
@@ -26,7 +27,7 @@ void* get_in_addr(struct sockaddr* sa)
 	}
 }
 
-uint16_t GetPort(struct sockaddr* sa)
+uint16_t GetPort(const struct sockaddr* sa)
 {
 	if (sa->sa_family == AF_INET)
 	{
@@ -38,7 +39,7 @@ uint16_t GetPort(struct sockaddr* sa)
 	}
 }
 
-std::string PrintAddressFamily(struct sockaddr* sa)
+std::string PrintAddressFamily(const struct sockaddr* sa)
 {
 	if (sa->sa_family == AF_INET)
 	{
@@ -49,3 +50,10 @@ std::string PrintAddressFamily(struct sockaddr* sa)
 		return "<IP version 6>";
 	}
 }
+
+enum class MessageType
+{
+	Unknown,
+	Connected,
+	Ping
+};

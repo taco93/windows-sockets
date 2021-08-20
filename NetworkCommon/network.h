@@ -5,12 +5,13 @@
 #include "net_tsqueue.h"
 #include "net_tcp_server.h"
 #include "net_udp_server.h"
+#include "net_client.h"
 
 namespace network
 {
 	namespace udp
 	{
-		void SendTo(Server* server, struct sockaddr* client, const socklen_t& len, const std::string& msg)
+		void SendTo(Server* server, struct sockaddr* client, const socklen_t& len, const message<MessageType>& msg)
 		{
 			server->Send(client, len, msg);
 		}

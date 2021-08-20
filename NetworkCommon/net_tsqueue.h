@@ -1,5 +1,8 @@
 #pragma once
 
+// TODO
+// Make the queue thread safe, currently it is not
+
 namespace network
 {
 	template <typename T>

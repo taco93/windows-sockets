@@ -25,7 +25,7 @@ namespace network
 
 		friend std::ostream& operator <<(std::ostream& os, const message<T>& msg)
 		{
-			os << "ID:" << (int)msg.header.id << " Size: " << msg.header.size;
+			os << "ID:" << (int)msg.header.id << " Size: " << msg.header.size << std::endl;
 
 			return os;
 		}

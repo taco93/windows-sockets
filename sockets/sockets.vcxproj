@@ -24,6 +24,7 @@
     <ProjectGuid>{025fd042-81ad-4008-8cbb-c745dbbad671}</ProjectGuid>
     <RootNamespace>sockets</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>NetServer</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

@@ -13,14 +13,6 @@ namespace network
 {
 	namespace udp
 	{
-		struct ClientMetaData
-		{
-			sockaddr_storage addr;
-			socklen_t addrLen = sizeof(sockaddr_storage);
-			char ipAsString[IPV6_ADDRSTRLEN];
-			uint16_t id;
-		};
-
 		class Server;
 
 		typedef void(*MessageReceivedHandler)(Server* server, struct sockaddr* sa, const socklen_t& len, const message<MessageType>& msg);
@@ -31,7 +23,6 @@ namespace network
 			int								m_port;
 			std::string						m_ipAddress;
 			SOCKET							m_socket;
-			std::vector<ClientMetaData>		m_clients;
 			MessageReceivedHandler			MessageReceived;
 
 		private:
@@ -176,9 +167,12 @@ namespace network
 				std::cout << "[SERVER] Client from " << ipAsString << ":" << GetPort(sa) << " " <<
 					PrintAddressFamily(sa) << " " << "is accepted" << std::endl << std::endl;
 				break;
+			case MessageType::Ping:
+				break;
 			default:
 				break;
 			}
+			// This will echo back the message that was sent to the sendee
 			sendto(m_socket, (char*)&msg, sizeof(msg), 0, sa, len);
 		}
 	}

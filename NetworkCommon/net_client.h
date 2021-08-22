@@ -6,6 +6,7 @@
 
 namespace network
 {
+	// A client is just an endpoint that is able to receive and send data using the Server/Client structure
 	class Client
 	{
 	private:

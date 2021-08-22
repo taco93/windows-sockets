@@ -12,6 +12,9 @@ namespace network
 		uint32_t size = 0;
 	};
 
+	// A message will include a header and a payload, the header identifies the message type.
+	// The payload is the data that holds all data sent over the network. This can include position,
+	// rotation or scale data and more...
 	template <typename T>
 	struct message
 	{
@@ -30,6 +33,7 @@ namespace network
 			return os;
 		}
 
+		// Serializes the data if not too complex
 		template<typename DataType>
 		friend message<T>& operator << (message<T>& msg, const DataType& data)
 		{
@@ -47,6 +51,7 @@ namespace network
 			return msg;
 		}
 
+		// Deserializes data if not too complex
 		template<typename DataType>
 		friend message<T>& operator >> (message<T>& msg, DataType& data)
 		{

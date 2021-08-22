@@ -155,10 +155,6 @@ namespace network
 
 				if (bytesReceived > 0)
 				{
-					inet_ntop(client_info.ss_family, get_in_addr((struct sockaddr*)&client_info), ipAsString, sizeof(ipAsString));
-					std::cout << "[SERVER] Incoming message from: " << ipAsString << ":" << GetPort((struct sockaddr*)&client_info) << " " <<
-						PrintAddressFamily((struct sockaddr*)&client_info) << std::endl;
-
 					if (this->MessageReceived != NULL)
 					{
 						this->MessageReceived(this, (struct sockaddr*)&client_info, client_info_len, buffer);
@@ -170,10 +166,15 @@ namespace network
 
 		void Server::Send(struct sockaddr* sa, const socklen_t& len, const message<MessageType>& msg)
 		{
+			std::cout << msg << std::endl;
 			switch (msg.header.id)
 			{
 			case MessageType::Connected:
-				std::cout << "Client is now connected" << std::endl;
+				char ipAsString[IPV6_ADDRSTRLEN];
+				ZeroMemory(ipAsString, sizeof(ipAsString));
+				inet_ntop(sa->sa_family, get_in_addr(sa), ipAsString, sizeof(ipAsString));
+				std::cout << "[SERVER] Client from " << ipAsString << ":" << GetPort(sa) << " " <<
+					PrintAddressFamily(sa) << " " << "is accepted" << std::endl << std::endl;
 				break;
 			default:
 				break;

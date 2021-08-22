@@ -60,6 +60,11 @@ namespace network
 			std::cout << "Couldn't create socket" << std::endl;
 			return -1;
 		}
+
+		u_long enable = 1;
+
+		ioctlsocket(sockfd, FIONBIO, &enable);
+
 		ZeroMemory(&m_message, sizeof(m_message));
 		m_message.header.id = MessageType::Connected;
 		sendto(sockfd, (char*)&m_message, sizeof(m_message), 0, p->ai_addr, p->ai_addrlen);
@@ -114,7 +119,7 @@ namespace network
 
 	inline void Client::Run()
 	{
-		std::cout << "[Client] is active!" << std::endl;
+		std::cout << "[Client] Started!" << std::endl << std::endl;
 
 		struct sockaddr_storage server_info;
 		socklen_t server_info_len = sizeof(server_info);
@@ -131,7 +136,13 @@ namespace network
 				switch (buffer.header.id)
 				{
 				case MessageType::Connected:
-					std::cout << "Connected to the server!" << std::endl;
+					char ipAsString[IPV6_ADDRSTRLEN];
+					ZeroMemory(ipAsString, sizeof(ipAsString));
+					inet_ntop(server_info.ss_family, get_in_addr((struct sockaddr*)&server_info), ipAsString, sizeof(ipAsString));
+
+					std::cout << "Connected to: " << ipAsString << ":" << GetPort((struct sockaddr*)&server_info) << std::endl;
+					break;
+				case MessageType::Ping:
 					break;
 				default:
 					break;
@@ -139,13 +150,11 @@ namespace network
 			}
 			else
 			{
-				std::cout << "Couldn't receive from server!" << std::endl;
-				break;
+				
 			}
 		}
 	}
 	inline void Client::PingServer()
 	{
-
 	}
 }

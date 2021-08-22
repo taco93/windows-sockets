@@ -21,6 +21,8 @@ namespace network
 	public:
 		Client(std::string&& ip, int&& port);
 		virtual ~Client();
+		Client(const Client& other) = delete;
+		Client& operator=(const Client& other) = delete;
 
 	public:
 		bool Init();
@@ -151,11 +153,11 @@ namespace network
 			}
 			else
 			{
-				
 			}
 		}
 	}
 	inline void Client::PingServer()
 	{
+		// TODO: Add a way to ping the server for a round-trip-time printed in console.
 	}
 }

@@ -5,7 +5,6 @@
 
 #pragma comment (lib, "ws2_32.lib")
 
-#define BUFFER_SIZE 4096
 // Version # 0.1 
 // UDP server to handle traffic of multiple players updating their position, rotation and states
 
@@ -149,6 +148,21 @@ namespace network
 					if (this->MessageReceived != NULL)
 					{
 						this->MessageReceived(this, (struct sockaddr*)&client_info, client_info_len, buffer);
+					}
+				}
+				else
+				{
+					if (WSAGetLastError() == WSAEWOULDBLOCK)
+					{
+						continue;
+					}
+					else if (WSAGetLastError() == WSAETIMEDOUT)
+					{
+						std::cout << "Client timed out." << std::endl;
+					}
+					else
+					{
+						std::cout << WSAGetLastError() << std::endl;
 					}
 				}
 			}

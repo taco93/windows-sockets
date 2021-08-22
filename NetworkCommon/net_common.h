@@ -54,6 +54,7 @@ std::string PrintAddressFamily(const struct sockaddr* sa)
 enum class MessageType
 {
 	Unknown,
+	Disconnected,
 	Connected,
 	Ping
 };

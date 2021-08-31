@@ -200,8 +200,6 @@ namespace network
 					}
 					else
 					{
-						std::cout << "Server shutdown!" << std::endl;
-						break;
 					}
 				}
 			}

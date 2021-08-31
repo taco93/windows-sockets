@@ -71,7 +71,7 @@ namespace network
 
 			u_long enable = 1;
 
-			//ioctlsocket(sockfd, FIONBIO, &enable);
+			ioctlsocket(sockfd, FIONBIO, &enable);
 
 			m_message.header.id = MessageType::Connected;
 			std::cout << "Message size should be: " << m_message.size();

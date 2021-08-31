@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="net_buffer.h" />
     <ClInclude Include="network.h" />
     <ClInclude Include="net_client.h" />
     <ClInclude Include="net_common.h" />

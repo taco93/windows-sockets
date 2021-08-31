@@ -11,7 +11,7 @@ namespace network
 {
 	namespace udp
 	{
-		void SendTo(Server* server, struct sockaddr* client, const socklen_t& len, const message<MessageType>& msg)
+		void SendTo(Server* server, struct sockaddr* client, const socklen_t& len, message<MessageType>& msg)
 		{
 			server->Send(client, len, msg);
 		}

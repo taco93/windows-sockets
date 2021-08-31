@@ -39,5 +39,8 @@
     <ClInclude Include="net_client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="net_buffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

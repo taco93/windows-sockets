@@ -14,7 +14,7 @@ namespace network
 	{
 		class Server;
 
-		typedef void(*MessageReceivedHandler)(Server* server, struct sockaddr* sa, const socklen_t& len, const message<MessageType>& msg);
+		typedef void(*MessageReceivedHandler)(Server* server, struct sockaddr* sa, const socklen_t& len, message<MessageType>& msg);
 
 		class Server
 		{
@@ -35,7 +35,7 @@ namespace network
 
 			bool Init();
 			void Run();
-			void Send(struct sockaddr* sa, const socklen_t& len, const message<MessageType>& msg);
+			void Send(struct sockaddr* sa, const socklen_t& len, message<MessageType>& msg);
 		};
 
 		SOCKET Server::CreateSocket()
@@ -82,7 +82,7 @@ namespace network
 			freeaddrinfo(servinfo);
 
 			u_long enable = 1;
-			ioctlsocket(listening, FIONBIO, &enable);
+			//ioctlsocket(listening, FIONBIO, &enable);
 
 			return listening;
 		}
@@ -127,25 +127,22 @@ namespace network
 		void Server::Run()
 		{
 			std::cout << "[SERVER] Started!" << std::endl << std::endl;
-
 			message<MessageType> buffer;
 
 			while (1)
 			{
 				int32_t bytesReceived = 0;
 
-				char ipAsString[IPV6_ADDRSTRLEN];
-				ZeroMemory(ipAsString, sizeof(ipAsString));
-
 				struct sockaddr_storage client_info;
 				socklen_t client_info_len = sizeof(client_info);
 
 				ZeroMemory(&buffer, sizeof(buffer));
-				bytesReceived = recvfrom(m_socket, (char*) & buffer, sizeof(buffer), 0, (struct sockaddr*)&client_info, &client_info_len);
+				bytesReceived = recvfrom(m_socket, (char*)&buffer, 500, 0, (struct sockaddr*)&client_info, &client_info_len);
+
 
 				if (bytesReceived > 0)
 				{
-					if (this->MessageReceived != NULL)
+					if (this->MessageReceived != nullptr)
 					{
 						this->MessageReceived(this, (struct sockaddr*)&client_info, client_info_len, buffer);
 					}
@@ -169,8 +166,8 @@ namespace network
 			closesocket(m_socket);
 		}
 
-		void Server::Send(struct sockaddr* sa, const socklen_t& len, const message<MessageType>& msg)
-		{
+		void Server::Send(struct sockaddr* sa, const socklen_t& len, message<MessageType>& msg)
+		{	
 			std::cout << msg << std::endl;
 			switch (msg.header.id)
 			{
@@ -178,16 +175,16 @@ namespace network
 				char ipAsString[IPV6_ADDRSTRLEN];
 				ZeroMemory(ipAsString, sizeof(ipAsString));
 				inet_ntop(sa->sa_family, get_in_addr(sa), ipAsString, sizeof(ipAsString));
+
 				std::cout << "[SERVER] Client from " << ipAsString << ":" << GetPort(sa) << " " <<
 					PrintAddressFamily(sa) << " " << "is accepted" << std::endl << std::endl;
 				break;
-			case MessageType::Ping:
-				break;
-			default:
+			case MessageType::PingServer:
+				std::cout << "[SERVER] Client requested a server ping!" << std::endl;
 				break;
 			}
 			// This will echo back the message that was sent to the sendee
-			sendto(m_socket, (char*)&msg, sizeof(msg), 0, sa, len);
+			sendto(m_socket, (char*)&msg, msg.size(), 0, sa, len);
 		}
 	}
 }

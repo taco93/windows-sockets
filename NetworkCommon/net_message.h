@@ -17,7 +17,7 @@ namespace network
 	template <typename T>
 	struct message
 	{
-		msg_header<T> header;
+		msg_header<T> header = {};
 		std::vector<uint8_t> payload;
 
 		size_t size() const
@@ -27,12 +27,11 @@ namespace network
 
 		friend std::ostream& operator <<(std::ostream& os, const message<T>& msg)
 		{
-			os << "ID:" << (int)msg.header.id << " Size: " << msg.header.size;
+			os << "ID:" << (int)msg.header.id << " Size: " << msg.size();
 
 			return os;
 		}
 
-		// Serializes the data if not too complex
 		template<typename DataType>
 		friend message<T>& operator << (message<T>& msg, const DataType& data)
 		{
@@ -50,7 +49,6 @@ namespace network
 			return msg;
 		}
 
-		// Deserializes data if not too complex
 		template<typename DataType>
 		friend message<T>& operator >> (message<T>& msg, DataType& data)
 		{

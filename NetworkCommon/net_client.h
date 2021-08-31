@@ -95,6 +95,7 @@ namespace network
 		Client::~Client()
 		{
 			WSACleanup();
+			closesocket(m_socket);
 		}
 
 		inline bool Client::Init()
@@ -199,7 +200,8 @@ namespace network
 					}
 					else
 					{
-						//std::cout << WSAGetLastError() << std::endl;
+						std::cout << "Server shutdown!" << std::endl;
+						break;
 					}
 				}
 			}

@@ -3,8 +3,6 @@
 
 #pragma comment (lib, "ws2_32.lib")
 
-#define BUFFER_SIZE 4096
-
 namespace network
 {
 	namespace tcp
@@ -34,6 +32,7 @@ namespace network
 		private:
 			SOCKET CreateSocket();
 			SOCKET WaitForConnection(const SOCKET& listening, ClientMetaData* output);
+			std::string PrintSocketData(struct addrinfo* p);
 
 		public:
 			Server(std::string&& ip, int&& port, MessageReceivedHandler handler);
@@ -64,6 +63,7 @@ namespace network
 
 			for (p = servinfo; p != nullptr; p = p->ai_next)
 			{
+				std::cout << PrintSocketData(p) << std::endl;
 				listening = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
 
 				if (listening == INVALID_SOCKET)
@@ -88,7 +88,9 @@ namespace network
 			freeaddrinfo(servinfo);
 
 			u_long enable = 1;
-			ioctlsocket(listening, FIONBIO, &enable);
+			//ioctlsocket(listening, FIONBIO, &enable);
+			setsockopt(listening, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(&enable), sizeof(enable));
+			setsockopt(listening, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&enable), sizeof(enable));
 
 			if (listen(listening, SOMAXCONN) == INVALID_SOCKET)
 			{
@@ -140,12 +142,41 @@ namespace network
 		Server::Server(std::string&& ipAddress, int&& portNumber, MessageReceivedHandler handler)
 			:m_ipAddress(ipAddress), m_port(portNumber), MessageReceived(handler)
 		{
+			std::cout << "Starting server..." << std::endl;
 			m_socket = 0;
 		}
 
 		Server::~Server()
 		{
+			closesocket(m_socket);
 			WSACleanup();
+		}
+
+		inline std::string Server::PrintSocketData(struct addrinfo* p)
+		{
+			std::string data = "Full socket information:\n";
+
+			if (p->ai_family == AF_INET)
+			{
+				data += "Address family: AF_INET\n";
+			}
+			else if (p->ai_family == AF_INET6)
+			{
+				data += "Address family: AF_INET6\n";
+			}
+
+			if (p->ai_socktype == SOCK_STREAM)
+			{
+				data += "Socktype: TCP";
+			}
+			else if (p->ai_socktype == SOCK_DGRAM)
+			{
+				data += "Socktype: UDP";
+			}
+
+			data += "\n";
+
+			return data;
 		}
 
 		void Server::Run()
@@ -155,7 +186,7 @@ namespace network
 			fd_set master = {};
 			FD_SET(m_socket, &master);
 			char buffer[BUFFER_SIZE];
-
+			
 			while (1)
 			{
 				fd_set copy = master;
@@ -171,12 +202,14 @@ namespace network
 						if (currentSocket == m_socket)
 						{
 							ClientMetaData client = {};
-							client.socket = WaitForConnection(m_socket, &client);
+
+							WaitForConnection(m_socket, &client);
 
 							if (client.socket == INVALID_SOCKET)
 							{
 								return;
 							}
+
 							inet_ntop(client.addr.ss_family, get_in_addr((struct sockaddr*)&client.addr), &client.ipAsString[0], IPV6_ADDRSTRLEN);
 							std::cout << "[SERVER] Client connected from: " << client.ipAsString << ":" << GetPort((struct sockaddr*)&client.addr) << " " <<
 								PrintAddressFamily((struct sockaddr*)&client.addr) << std::endl;
@@ -194,6 +227,7 @@ namespace network
 
 							if (bytesReceived > 0)
 							{
+								std::cout << buffer << std::endl;
 								if (this->MessageReceived != NULL)
 								{
 									for (unsigned int j = 0; j < m_clients.size(); j++)
@@ -207,24 +241,30 @@ namespace network
 							}
 							else
 							{
-								std::cout << "Client disconnected!" << std::endl;
-								FD_CLR(currentSocket, &master);
-								closesocket(currentSocket);
-
-								for (unsigned int j = 0; j < m_clients.size(); j++)
+								if (errno == WSAEWOULDBLOCK)
 								{
-									if (currentSocket == m_clients[j].socket)
-									{
-										m_clients.erase(m_clients.begin() + j);
-									}
+									continue;
+								}
+								else
+								{
+									std::cout << "Client disconnected!" << std::endl;
+									FD_CLR(currentSocket, &master);
+									closesocket(currentSocket);
 
+									for (unsigned int j = 0; j < m_clients.size(); j++)
+									{
+										if (currentSocket == m_clients[j].socket)
+										{
+											m_clients.erase(m_clients.begin() + j);
+										}
+
+									}
 								}
 							}
 						}
 					}
 				}
 			}
-			closesocket(m_socket);
 		}
 
 		void Server::Send(const int& clientSocket, const std::string& msg)

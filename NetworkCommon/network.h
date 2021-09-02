@@ -6,6 +6,9 @@
 #include "net_tcp_server.h"
 #include "net_udp_server.h"
 #include "net_client.h"
+#include "net_tcp_client.h"
+#include "net_client.h"
+#include "server_interface.h"
 
 namespace network
 {
@@ -19,7 +22,7 @@ namespace network
 
 	namespace tcp
 	{
-		void Send(network::tcp::Server* server, const int& client, const std::string& msg)
+		void Send(Server* server, const int& client, const std::string& msg)
 		{
 			server->Send(client, msg);
 		}

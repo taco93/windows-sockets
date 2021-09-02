@@ -14,6 +14,7 @@
 #endif
 
 #define IPV6_ADDRSTRLEN 46
+#define BUFFER_SIZE 4096
 
 void* get_in_addr(const struct sockaddr* sa)
 {

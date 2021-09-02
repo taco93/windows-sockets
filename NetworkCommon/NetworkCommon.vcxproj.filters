@@ -33,13 +33,22 @@
     <ClInclude Include="net_udp_server.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="net_protocol.h">
+    <ClInclude Include="net_client2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net_buffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net_tcp_client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net_connection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="net_client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="net_buffer.h">
+    <ClInclude Include="server_interface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

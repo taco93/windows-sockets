@@ -23,7 +23,6 @@
     <ClInclude Include="net_buffer.h" />
     <ClInclude Include="network.h" />
     <ClInclude Include="net_common.h" />
-    <ClInclude Include="net_connection.h" />
     <ClInclude Include="net_message.h" />
     <ClInclude Include="net_tsqueue.h" />
     <ClInclude Include="net_server_interface.h" />

@@ -11,9 +11,9 @@ public:
 	}
 
 	// Inherited via server_interface
-	virtual void OnClientConnect() override
+	virtual void OnClientConnect(const std::string& ip, const uint16_t& port) override
 	{
-		std::cout << "[SERVER] Client has connected!" << std::endl;
+		std::cout << "[SERVER] Client has connected from " << ip << ":" << port << std::endl;
 	}
 
 	virtual void OnClientDisconnect() override

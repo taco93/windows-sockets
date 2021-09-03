@@ -23,6 +23,10 @@ public:
 
 				Send(msg);
 			}
+			else if (key[1] && !old_key[1])
+			{
+				break;
+			}
 
 			for (int i = 0; i < 3; i++)
 			{
@@ -56,7 +60,7 @@ int main()
 		std::cout << "I am disconnected!" << std::endl;
 	}
 
-	getchar();
+	system("pause");
 
 	return 0;
 }

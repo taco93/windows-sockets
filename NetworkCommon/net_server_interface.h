@@ -8,8 +8,8 @@ namespace network
 	{
 	private:
 		SOCKET m_socket;
-		std::function<void(const uint16_t&, const std::string& msg)> MessageReceivedHandler;
-		std::function<void()> ClientConnectHandler;
+		std::function<void(const uint16_t&, const std::string&)> MessageReceivedHandler;
+		std::function<void(const std::string&, const uint16_t&)> ClientConnectHandler;
 		std::function<void()> ClientDisconnectHandler;
 
 		SOCKET WaitForConnection();
@@ -25,7 +25,7 @@ namespace network
 
 			using namespace std::placeholders;
 			MessageReceivedHandler = std::bind(&server_interface::OnMessageReceived, this, _1, _2);
-			ClientConnectHandler = std::bind(&server_interface::OnClientConnect, this);
+			ClientConnectHandler = std::bind(&server_interface::OnClientConnect, this, _1, _2);
 			ClientDisconnectHandler = std::bind(&server_interface::OnClientDisconnect, this);
 		}
 		virtual ~server_interface()
@@ -38,7 +38,7 @@ namespace network
 		void Stop();
 
 	public:
-		virtual void OnClientConnect() = 0;
+		virtual void OnClientConnect(const std::string& ip, const uint16_t& port) = 0;
 		virtual void OnClientDisconnect() = 0;
 		virtual void OnMessageReceived(const uint16_t& socketId, const std::string& msg) = 0;
 	};
@@ -74,8 +74,10 @@ namespace network
 
 		inet_ntop(p->ai_family, &((struct sockaddr_in*)p->ai_addr)->sin_addr, ipAsString, sizeof(ipAsString));
 
-		data += "Ip: ";
+		data += "Host: ";
 		data += ipAsString;
+		data += ":";
+		data += std::to_string(GetPort(p->ai_addr));
 
 		data += "\n";
 
@@ -207,7 +209,13 @@ namespace network
 							if (this->ClientConnectHandler != NULL)
 							{
 								FD_SET(currentSocket, &master);
-								this->ClientConnectHandler();
+								char ipAsString[IPV6_ADDRSTRLEN] = {};
+								struct sockaddr_in client = {};
+								socklen_t len = sizeof(client);
+								getpeername(currentSocket, (struct sockaddr*)&client, &len);
+								inet_ntop(client.sin_family, &client.sin_addr, ipAsString, sizeof(ipAsString));
+
+								this->ClientConnectHandler(std::string(ipAsString), GetPort((struct sockaddr*)&client));
 							}
 							continue;
 						}

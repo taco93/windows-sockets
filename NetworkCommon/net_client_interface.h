@@ -29,6 +29,8 @@ namespace network
 
 		// Check to see if client is connected to a server
 		bool IsConnected();
+
+		void Send(const message<MessageType>& msg);
 	};
 
 	template<typename T>
@@ -38,6 +40,7 @@ namespace network
 
 		if (m_connection->ConnectToServer(ip, port) == false)
 		{
+			m_connection.release();
 			return false;
 		}
 
@@ -67,5 +70,11 @@ namespace network
 		{
 			return false;
 		}
+	}
+
+	template<typename T>
+	inline void client_interface<T>::Send(const message<MessageType>& msg)
+	{
+		m_connection->Send(msg);
 	}
 }

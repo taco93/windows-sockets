@@ -18,7 +18,7 @@ namespace network
 		{
 			m_endpoint = {};
 			m_endpoint_len = sizeof(m_endpoint);
-			m_socket = 0;
+			m_socket = INVALID_SOCKET;
 		}
 
 		virtual ~connection()
@@ -157,6 +157,17 @@ namespace network
 		}
 
 		m_socket = INVALID_SOCKET;
+
+		return true;
+	}
+	template<typename T>
+	inline bool connection<T>::Send(const message<T>& msg)
+	{
+		char buffer[BUFFER_SIZE] = "Ping Server!";
+
+		std::cout << buffer << std::endl;
+
+		send(m_socket, buffer, strlen(buffer), 0);
 
 		return true;
 	}

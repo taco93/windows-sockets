@@ -1,13 +1,16 @@
 #pragma once
 #include "net_common.h"
+#include <functional>
 
 namespace network
 {
-	template <typename T>
 	class server_interface
 	{
 	private:
 		SOCKET m_socket;
+		std::function<void(const uint16_t&, const std::string& msg)> MessageReceivedHandler;
+		std::function<void()> ClientConnectHandler;
+		std::function<void()> ClientDisconnectHandler;
 
 		SOCKET WaitForConnection();
 		std::string PrintSocketData(struct addrinfo* p);
@@ -16,23 +19,36 @@ namespace network
 		SOCKET CreateSocket(const uint16_t& port);
 
 	public:
+		server_interface()
+		{
+			m_socket = INVALID_SOCKET;
+
+			using namespace std::placeholders;
+			MessageReceivedHandler = std::bind(&server_interface::OnMessageReceived, this, _1, _2);
+			ClientConnectHandler = std::bind(&server_interface::OnClientConnect, this);
+			ClientDisconnectHandler = std::bind(&server_interface::OnClientDisconnect, this);
+		}
+		virtual ~server_interface()
+		{
+			WSACleanup();
+		}
+
 		bool Start(const uint16_t& port);
 		void Update();
-		bool Stop();
+		void Stop();
 
+	public:
 		virtual void OnClientConnect() = 0;
 		virtual void OnClientDisconnect() = 0;
-		virtual void OnMessageReceived() = 0;
+		virtual void OnMessageReceived(const uint16_t& socketId, const std::string& msg) = 0;
 	};
 
-	template<typename T>
-	inline SOCKET server_interface<T>::WaitForConnection()
+	inline SOCKET server_interface::WaitForConnection()
 	{
 		return accept(m_socket, nullptr, nullptr);
 	}
 
-	template<typename T>
-	inline std::string server_interface<T>::PrintSocketData(addrinfo* p)
+	inline std::string server_interface::PrintSocketData(addrinfo* p)
 	{
 		std::string data = "Full socket information:\n";
 
@@ -59,8 +75,7 @@ namespace network
 		return data;
 	}
 
-	template<typename T>
-	inline SOCKET server_interface<T>::CreateSocket(const uint16_t& port)
+	inline SOCKET server_interface::CreateSocket(const uint16_t& port)
 	{
 		// Get a linked network structure based on provided hints
 		struct addrinfo hints, * servinfo, * p;
@@ -112,8 +127,7 @@ namespace network
 		return listener;
 	}
 
-	template<typename T>
-	inline bool server_interface<T>::Start(const uint16_t& port)
+	inline bool server_interface::Start(const uint16_t& port)
 	{
 		// Initialize winsock
 		WSADATA wsaData;
@@ -153,8 +167,7 @@ namespace network
 		return true;
 	}
 
-	template<typename T>
-	inline void server_interface<T>::Update()
+	inline void server_interface::Update()
 	{
 		fd_set master = {};
 		FD_SET(m_socket, &master);
@@ -184,8 +197,11 @@ namespace network
 
 						if (currentSocket != INVALID_SOCKET)
 						{
-							OnClientConnect();
-							FD_SET(currentSocket, &master);
+							if (this->ClientConnectHandler != NULL)
+							{
+								FD_SET(currentSocket, &master);
+								this->ClientConnectHandler();
+							}
 							continue;
 						}
 					}
@@ -193,7 +209,14 @@ namespace network
 					{
 						int32_t bytes = recv(currentSocket, buffer, sizeof(buffer), 0);
 
-						if (bytes <= 0)
+						if (bytes > 0)
+						{
+							if (this->MessageReceivedHandler != NULL)
+							{
+								MessageReceivedHandler(currentSocket, std::string(buffer, bytes + 1));
+							}
+						}
+						else
 						{
 							if (errno == WSAEWOULDBLOCK)
 							{
@@ -201,8 +224,11 @@ namespace network
 							}
 							else
 							{
-								OnClientDisconnect();
-								FD_CLR(currentSocket, &master);
+								if (this->ClientDisconnectHandler != NULL)
+								{
+									FD_CLR(currentSocket, &master);
+									ClientDisconnectHandler();
+								}
 							}
 						}
 					}
@@ -211,9 +237,8 @@ namespace network
 		}
 	}
 
-	template<typename T>
-	inline bool server_interface<T>::Stop()
+	inline void server_interface::Stop()
 	{
-		return false;
+
 	}
 }

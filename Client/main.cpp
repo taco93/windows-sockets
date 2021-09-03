@@ -41,7 +41,7 @@ int main()
 
 	Client c;
 
-	c.Connect("127.0.0.1", 4950);
+	c.Connect("188.148.27.231", 4950);
 
 	if (c.IsConnected())
 	{

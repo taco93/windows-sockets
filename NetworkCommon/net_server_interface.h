@@ -63,12 +63,19 @@ namespace network
 
 		if (p->ai_socktype == SOCK_STREAM)
 		{
-			data += "Socktype: TCP";
+			data += "Socktype: TCP\n";
 		}
 		else if (p->ai_socktype == SOCK_DGRAM)
 		{
-			data += "Socktype: UDP";
+			data += "Socktype: UDP\n";
 		}
+
+		char ipAsString[IPV6_ADDRSTRLEN] = {};
+
+		inet_ntop(p->ai_family, &((struct sockaddr_in*)p->ai_addr)->sin_addr, ipAsString, sizeof(ipAsString));
+
+		data += "Ip: ";
+		data += ipAsString;
 
 		data += "\n";
 
@@ -160,7 +167,7 @@ namespace network
 
 		if (listen(m_socket, SOMAXCONN) == INVALID_SOCKET)
 		{
-			std::cerr << WSAGetLastError() << std::endl;
+			std::cerr << "Listen:" << WSAGetLastError() << std::endl;
 			return false;
 		}
 
@@ -213,7 +220,7 @@ namespace network
 						{
 							if (this->MessageReceivedHandler != NULL)
 							{
-								MessageReceivedHandler(currentSocket, std::string(buffer, bytes + 1));
+								this->MessageReceivedHandler(currentSocket, std::string(buffer, bytes + 1));
 							}
 						}
 						else
@@ -227,7 +234,7 @@ namespace network
 								if (this->ClientDisconnectHandler != NULL)
 								{
 									FD_CLR(currentSocket, &master);
-									ClientDisconnectHandler();
+									this->ClientDisconnectHandler();
 								}
 							}
 						}
